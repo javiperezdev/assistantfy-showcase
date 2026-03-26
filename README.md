@@ -23,13 +23,30 @@ To handle multiple businesses securely within the same database, I designed a mu
 
 ``` mermaid
 erDiagram
-    %% Core Tenant
+    %% CORE TENANT & AUTHENTICATION
     BUSINESS {
         int id PK
         string name
         string timezone
     }
 
+    ADMIN_USER {
+        int id PK
+        int business_id FK
+        string email UK "Unique"
+        string hashed_password
+        boolean is_active
+    }
+
+    BUSINESS_HOURS {
+        int id PK
+        int business_id FK
+        int day_of_week "1=Mon, 7=Sun"
+        time start_time
+        time end_time
+    }
+
+    %% RESOURCES & SKILLS
     WORKER {
         int id PK
         int business_id FK
@@ -44,19 +61,20 @@ erDiagram
         int duration_minutes 
     }
 
-    %% Skill-based routing (Junction Table)
     WORKER_SERVICE {
         int worker_id PK,FK "Points to Worker.id"
         int service_id PK,FK "Points to Service.id"
     }
 
+    %% CUSTOMERS
     CLIENT {
         int id PK
         int business_id FK
-        string phone_number
+        string phone_number UK "Unique per Business"
         string name
     }
     
+    %% TRANSACTIONS 
     APPOINTMENT {
         int id PK
         int business_id FK
@@ -64,20 +82,22 @@ erDiagram
         int worker_id FK
         int service_id FK
         datetime start_time 
-        datetime end_time 
+        datetime end_time
     }
 
-    %% Relationships
-    BUSINESS ||--o{ WORKER : "has"
+    %% RELATIONSHIPS
+    BUSINESS ||--o{ ADMIN_USER : "has accounts (login)"
+    BUSINESS ||--o{ BUSINESS_HOURS : "operates during"
+    BUSINESS ||--o{ WORKER : "employs"
     BUSINESS ||--o{ SERVICE : "offers"
     BUSINESS ||--o{ CLIENT : "registers"
     BUSINESS ||--o{ APPOINTMENT : "manages"
     
-    %% Many-to-Many resolution
+    %% MANY-TO-MANY RESOLUTION
     WORKER ||--o{ WORKER_SERVICE : "can perform"
     SERVICE ||--o{ WORKER_SERVICE : "is performed by"
 
-    %% Appointment relationships
+    %% APPOINTMENT RELATIONSHIPS
     CLIENT ||--o{ APPOINTMENT : "books"
     WORKER ||--o{ APPOINTMENT : "attends"
     SERVICE ||--o{ APPOINTMENT : "includes"
