@@ -26,6 +26,7 @@ erDiagram
     %% CORE TENANT & AUTHENTICATION
     BUSINESS {
         int id PK
+        string phone_number
         string name
         string timezone
     }
